@@ -1,0 +1,5 @@
+<launch>
+    <rosparam command="load" file="$(find abb_openai_hac)/config/abb_openai_hac_params.yaml" />
+    <!-- Launch the training system -->
+    <node pkg="abb_openai_hac" name="ABB_world" type="train_hac.py" output="screen"/>
+</launch>

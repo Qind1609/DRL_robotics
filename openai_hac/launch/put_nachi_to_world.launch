@@ -1,0 +1,6 @@
+<launch>
+    <include file="$(find nachi_gazebo)/launch/mz07/nachi_mz07_gazebo.launch"/>
+
+    <!--Load Rviz -->
+  <include file="$(find nachi_mz07_moveit_config)/launch/moveit_planning_execution.launch"/>
+</launch>

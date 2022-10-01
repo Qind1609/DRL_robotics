@@ -1,0 +1,46 @@
+HER: #namespace
+  n_actions: 6 # X+/-,Y+/-,Z+/-
+  n_observations: 4 # X,Y,Z values of the Tool Central Point and its distance from GOAL -- maybe change
+
+  #workspace
+  position_ee_x_max: 0.64
+  position_ee_x_min: 0.22
+  position_ee_y_max: 0.15
+  position_ee_y_min: -0.15
+  position_ee_z_max: 0.3
+  position_ee_z_min: 0.04
+
+  init_pos:
+    J1: 0.0
+    J2: 0.0
+    J3: 0.0
+    J4: 0.0
+    J5: 1.57
+    J6: 0.0
+
+  setup_ee_pos: # This has to be tested
+    x: 0.598
+    y: 0.005
+    z: 0.9
+
+  goal_ee_pos: # This has to be validated
+    x: 0.5
+    y: 0.3
+    z: 0.5
+
+  training_space: # 3D cube in which  robot (flange) is allowed to move in (m)
+    x_max: 0.63
+    x_min: 0.23
+    y_max: 0.145
+    y_min: -0.145
+    z_max: 0.36
+    z_min: 0.05
+
+  distance_threshold: 0.01 #5 mmm
+  position_max_delta: 0.01 # Increments of Decrements in the X/Y/Z positions each action step 10 mm
+  rotation_delta: 0.0001 # Todo
+
+  outofrange_punishement: 1
+  reached_goal_reward: 10
+  step_punishment: -1
+  max_distance: 0.5833

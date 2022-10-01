@@ -1,0 +1,31 @@
+<?xml version="1.0" ?>
+<sdf version='1.4'>
+  <model name="demo_cube">
+      <static>0</static>
+      <link name='link'>
+        <contact>
+            <collide_without_contact>true</collide_without_contact>
+        </contact>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.060 0.060 0.060</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Green</name>
+            </script>
+          </material>
+        </visual>
+        <velocity_decay>
+          <linear>0.000000</linear>
+          <angular>0.000000</angular>
+        </velocity_decay>
+        <self_collide>0</self_collide>
+        <kinematic>0</kinematic>
+        <gravity>0</gravity>
+      </link>
+  </model>
+</sdf>

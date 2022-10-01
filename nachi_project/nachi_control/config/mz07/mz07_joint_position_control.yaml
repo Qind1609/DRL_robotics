@@ -1,0 +1,38 @@
+mz07 :
+# Publish all joint states -----------------------------------
+  joint_state_controller:
+    type: joint_state_controller/JointStateController
+    publish_rate: 50
+# Position Controllers ---------------------------------------
+  j_1_position_controller:
+    type: position_controllers/JointPositionController
+    joint: J1
+     
+  j_2_position_controller:
+    type: position_controllers/JointPositionController
+    joint: J2
+   
+  j_3_position_controller:
+    type: position_controllers/JointPositionController
+    joint: J3
+    
+  j_4_position_controller:
+    type: position_controllers/JointPositionController
+    joint: J4
+    
+  j_5_position_controller:
+    type: position_controllers/JointPositionController
+    joint: J5
+    
+  j_6_position_controller:
+    type: position_controllers/JointPositionController
+    joint: J6
+ 
+  gazebo_ros_control:
+    pid_gains:
+     J1: {p: 100, i: 10, d: 0, i_clamp: 100}
+     J2: {p: 1000, i: 500, d: 0, i_clamp: 500}
+     J3: {p: 100, i: 10, d: 0, i_clamp: 100}
+     J4: {p: 100, i: 10, d: 10, i_clamp: 100}
+     J5: {p: 10, i: 1, d: 0, i_clamp: 100}
+     J6: {p: 10, i: 1, d: 0, i_clamp: 100}

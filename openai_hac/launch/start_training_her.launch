@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <rosparam command="load" file="$(find openai_hac)/config/nachi_params.yaml" />
+    <!-- Launch the training system -->
+    <node pkg="openai_hac" name="Nachi_her_reach" type="train_her.py" output="screen"/>
+</launch>
