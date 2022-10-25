@@ -1,0 +1,63 @@
+' MOVE ROBOT PROGRAM
+V10! = SYSTEM!(810)		'X
+V11! = SYSTEM!(811)		'Y
+V12! = SYSTEM!(812)		'Z
+V13! = SYSTEM!(813)		'Roll
+V14! = SYSTEM!(814)		'Pitch
+V15! = SYSTEM!(815)		'Yaw
+' JOINT
+L20! = SYSTEM!(100)	'JOINT1
+L21! = SYSTEM!(101)	'JOINT2
+L22! = SYSTEM!(102)	'JOINT3
+L23! = SYSTEM!(103)	'JOINT4
+L24! = SYSTEM!(104)	'JOINT5
+L25! = SYSTEM!(105)	'JOINT6
+' TO RADIAN
+V20! = RADDEG(L20!)	'J1 DEG
+V21! = RADDEG(L21!)	'J2 DEG
+V22! = RADDEG(L22!)	'J3 DEG
+V23! = RADDEG(L23!)	'J4 DEG
+V24! = RADDEG(L24!)	'J5 DEG
+V25! = RADDEG(L25!)	'J6 DEG
+'--------------------Reset Flag and run USERTASK
+V7% = 0
+V8% = 0
+FORKMCR 71,26'run usertask num 69 then jump to line 26
+'--------------------AX coord ABS Linear interpolate
+IF V7% = 1
+P100 = (V1!,V2!,V3!,V4!,V5!,V6!)
+MOVEX A=1,M1X,L,P100,S=100,H=1,MS
+GOTO *RESETFLAG
+ENDIF
+'--------------------AX coord ABS Joint interpolate
+IF V7% = 2
+P100 = (V1!,V2!,V3!,V4!,V5!,V6!)
+MOVEX A=1,M1X,L,P100,S=11,H=1,MS
+GOTO *RESETFLAG
+ENDIF
+'--------------------AX coord REALATIVE Linear interpolate
+IF V7% = 3
+P100 = (V1!,V2!,V3!,V4!,V5!,V6!)
+MOVEX A=1,M1X,L,P100,S=11.2,H=1,MS
+GOTO *RESETFLAG
+ENDIF
+'---------------------------OPEN COMPRESSED AIR 9 CLOSE COMPRESSED AIR 10
+IF V7% = 9
+SETM O9, 0
+SETM O10, 1
+GOTO *RESETFLAG
+ENDIF
+'---------------------------OPEN COMPRESSED AIR 10 CLOSE COMPRESSED AIR 9
+IF V7% = 10
+SETM O10, 0
+SETM O9, 1
+GOTO *RESETFLAG
+ENDIF
+'--------------------
+GOTO 26
+'--------------------
+*RESETFLAG
+V7% = 0
+V7$ = "  0"
+V8% = 1
+GOTO 26

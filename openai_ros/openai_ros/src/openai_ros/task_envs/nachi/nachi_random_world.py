@@ -136,6 +136,7 @@ class NachiRandomWorldEnv(nachi_env.NachiEnv, utils.EzPickle):
             "/HER/distance_threshold"
         )  # used to indicate if EE reaches the desired position
 
+
         self.max_distance = rospy.get_param(
             "/HER/max_distance"
         )  # used to indicate the failed (out of range case)
@@ -166,6 +167,10 @@ class NachiRandomWorldEnv(nachi_env.NachiEnv, utils.EzPickle):
         self.goal = np.array([x, y, z])  # new goal
 
         self.obj_positions.reset_position(x, y, z)  # set cube to the position
+   
+    def _set_goal(self, x, y, z, rx, ry, rz, w):
+        self.goal = np.array([x,y,z])
+        self.obj_positions.reset_position(x,y,z)
 
     def _set_init_pose(self):
         """
@@ -350,7 +355,7 @@ class NachiRandomWorldEnv(nachi_env.NachiEnv, utils.EzPickle):
         """
         current_pos = observations["observation"][:3]
 
-        done = self.calculate_if_done(self.goal, current_pos)
+        done = self.calculate_if_done(observations['desired_goal'], current_pos)
 
         return done
 
@@ -388,7 +393,7 @@ class NachiRandomWorldEnv(nachi_env.NachiEnv, utils.EzPickle):
 
         if distance < self.distance_threshold:
             done = True
-            rospy.logdebug("Reached a Desired Position!")
+            rospy.logwarn("Reached a Desired Position!")
 
         return done
 

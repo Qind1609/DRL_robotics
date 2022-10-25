@@ -88,6 +88,13 @@ class RobotGazeboEnv(gym.Env):
 
         return obs, reward, done, info
 
+    def get_obs(self):
+        obs = self._get_obs()
+        return obs
+
+    def set_goal(self, x, y, z, rx, ry, rz, w):
+        self._set_goal(x,y,z,rx,ry,rz, w)
+
     def reset(self):
         rospy.logdebug("Reseting RobotGazeboEnvironment")
         self._reset_sim()
@@ -179,6 +186,9 @@ class RobotGazeboEnv(gym.Env):
         Checks that all the sensors, publishers and other simulation systems are
         operational.
         """
+        raise NotImplementedError()
+
+    def _set_goal(self, x,y,z,r,p,yw):
         raise NotImplementedError()
 
     def _get_obs(self):

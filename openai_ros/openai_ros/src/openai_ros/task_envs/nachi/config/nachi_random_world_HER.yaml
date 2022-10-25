@@ -4,11 +4,11 @@ HER: #namespace
 
   #workspace
   position_ee_x_max: 0.64
-  position_ee_x_min: 0.22
+  position_ee_x_min: 0.29
   position_ee_y_max: 0.15
   position_ee_y_min: -0.15
-  position_ee_z_max: 0.3
-  position_ee_z_min: 0.04
+  position_ee_z_max: 0.32
+  position_ee_z_min: 0.14
 
   init_pos:
     J1: 0.0
@@ -30,11 +30,11 @@ HER: #namespace
 
   training_space: # 3D cube in which  robot (flange) is allowed to move in (m)
     x_max: 0.63
-    x_min: 0.23
+    x_min: 0.3
     y_max: 0.145
     y_min: -0.145
-    z_max: 0.36
-    z_min: 0.05
+    z_max: 0.31
+    z_min: 0.15
 
   distance_threshold: 0.01 #5 mmm
   position_max_delta: 0.01 # Increments of Decrements in the X/Y/Z positions each action step 10 mm

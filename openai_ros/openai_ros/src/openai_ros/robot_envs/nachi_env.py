@@ -266,7 +266,8 @@ class NachiEnv(RobotGazeboEnv):
     def _is_done(self, observations):
         """Checks if episode done based on observations given."""
         raise NotImplementedError()
-
+    def _set_goal(self, x, y, z, rx, ry, rz, w):
+        return NotImplementedError()
 
 class Obj_Pos(object):
 

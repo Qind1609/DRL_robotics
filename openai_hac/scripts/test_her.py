@@ -13,16 +13,16 @@ from mpi4py import MPI
 class Hyper_Params:
     def __init__(self):
         self.env_name = "NachiReach_v0"
-        self.seed = 123  
+        self.seed = 362514 
 
         # number of epochs for training
-        self.num_epochs = 500
+        self.num_epochs = 100
 
         # number of episodes - the times to collect samplers per epoch (reset -> new goal ->action)
-        self.num_episodes = 20
+        self.num_episodes = 50
 
         # maximum step for 1 episode
-        self.max_ep_step = 100  # 1000 steps
+        self.max_ep_step = 300  # steps
 
         # the times to update networks
         self.num_batches = 50  # (divide the dataset into 50 batch, shuffle and random sample for each batch)
@@ -36,8 +36,8 @@ class Hyper_Params:
         # size of replay buffer
         self.buff_size = 1000000  #  buffer size => 1000000 transitions
 
-        # train phase
-        self.phase = "train"
+        # test phase
+        self.phase = "test"
 
         # path to save model
         self.save_dir = (
@@ -45,7 +45,7 @@ class Hyper_Params:
         )
 
         # number of episodes testing should run
-        self.test_episodes = 20
+        self.test_episodes = 100
 
         # the clip ratio
         self.clip_obs = np.inf
@@ -91,14 +91,14 @@ class Hyper_Params:
 
         # training space
         self.position_x_max = 0.63
-        self.position_x_min = 0.23
+        self.position_x_min = 0.3
         self.position_y_max = 0.145
         self.position_y_min = -0.145
-        self.position_z_max = 0.36
-        self.position_z_min = 0.05
+        self.position_z_max = 0.31
+        self.position_z_min = 0.15
 
 
-def train_HER():
+def test_HER():
 
     params = Hyper_Params()
     rospy.init_node("HER_reach")
@@ -119,6 +119,7 @@ def train_HER():
     random.seed(params.seed + MPI.COMM_WORLD.Get_rank())
     if params.cuda:
         torch.cuda.manual_seed(params.seed + MPI.COMM_WORLD.Get_rank())
+    
     # reset and get observation
     obs = env.reset()
 
@@ -130,10 +131,11 @@ def train_HER():
         "max_timesteps": env._max_episode_steps,  # max_step for each ep
     }
 
-    ddpg_agent = DDPG_HER_N(params, env, env_params)
-    ddpg_agent.train()
+    ddpg_agent = Test_DDPG_HER(params, env, env_params)
+    ddpg_agent.test()
+    
     rospy.logwarn(
-        "####################### Training Complete ##########################"
+        "####################### Testing Complete ##########################"
     )
 
 
@@ -142,4 +144,4 @@ if __name__ == "__main__":
     os.environ["MKL_NUM_THREADS"] = "1"
     os.environ["IN_MPI"] = "1"
 
-    train_HER()
+    test_HER()

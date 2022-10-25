@@ -66,6 +66,15 @@ class DDPG_HER_N:
         self.critic_optimizer = torch.optim.Adam(
             self.critic.parameters(), self.params.lr_critic
         )
+
+        # create the normalizer
+        self.o_norm = normalizer(
+            size=self.env_params["obs_dim"], default_clip_range=self.params.clip_range
+        )
+        self.g_norm = normalizer(
+            size=self.env_params["goal_dim"], default_clip_range=self.params.clip_range
+        )
+        
         self.last_epoch = 0
         if MPI.COMM_WORLD.Get_rank() == 0:
             if os.path.exists(
@@ -84,7 +93,12 @@ class DDPG_HER_N:
                 self.actor.eval()
                 self.critic.eval()
                 self.last_epoch = checkpoint["epoch"]
-
+                #print(checkpoint['g_mean'])
+                self.g_norm.mean = checkpoint["g_mean"]
+                self.o_norm.mean = checkpoint["o_mean"]
+                self.g_norm.std = checkpoint["g_std"]
+                self.o_norm.std = checkpoint["o_std"]
+                
         # Create target networks pair which lag (delay) the original networks
         self.actor_target = Actor(self.env_params)
         self.critic_target = Critic(self.env_params)
@@ -101,14 +115,6 @@ class DDPG_HER_N:
         self.critic.to(device)
         self.actor_target.to(device)
         self.critic_target.to(device)
-
-        # create the normalizer
-        self.o_norm = normalizer(
-            size=self.env_params["obs_dim"], default_clip_range=self.params.clip_range
-        )
-        self.g_norm = normalizer(
-            size=self.env_params["goal_dim"], default_clip_range=self.params.clip_range
-        )
 
         # TODO:
         self.her_module = HER(self.params.replay_k, self.re_compute_reward)
@@ -497,6 +503,8 @@ class DDPG_HER_N:
 
                 # evaluation every time done 1 epoch
                 cumulate_reward, success_rate = self._eval_agent()
+                
+                
                 rospy.logwarn("==================== Done Epoch {}".format(epoch + 1))
                 writer.add_scalar(
                     "Distance(mm) mean error", cumulate_reward * 1000, epoch + 1
@@ -511,6 +519,115 @@ class DDPG_HER_N:
                             "success_rate": success_rate,
                             "Avg_distance": cumulate_reward,
                             "critic_state_dict": self.critic.state_dict(),
+                            "g_mean": self.g_norm.mean,
+                            "g_std": self.g_norm.std,
+                            "o_mean": self.o_norm.mean,
+                            "o_std": self.o_norm.std,
                         },
                         self.model_path + "/actor_critic.pt",
                     )
+
+
+class Test_DDPG_HER:
+    def __init__(self, params, env, env_params) -> None:
+    
+
+        self.env = env
+        self.env_params = env_params
+        self.params = params
+
+        self.actor = Actor(self.env_params)
+        # using Adam optimizer
+        self.actor_optimizer = torch.optim.Adam(
+            self.actor.parameters(), self.params.lr_actor
+        )
+        # create the normalizer
+        self.o_norm = normalizer(
+            size=self.env_params["obs_dim"], default_clip_range=self.params.clip_range
+        )
+        self.g_norm = normalizer(
+            size=self.env_params["goal_dim"], default_clip_range=self.params.clip_range
+        )
+
+        if MPI.COMM_WORLD.Get_rank() == 0:
+            if os.path.exists(
+                os.path.join(
+                    self.params.save_dir, self.params.env_name, "actor_critic.pt"
+                )
+            ):
+                checkpoint = torch.load(
+                    os.path.join(
+                        self.params.save_dir, self.params.env_name, "actor_critic.pt"
+                    )
+                )
+                self.actor.load_state_dict(checkpoint["actor_state_dict"])
+
+                self.actor.eval()
+
+                self.g_norm.mean = checkpoint['g_mean']
+                self.o_norm.mean = checkpoint['o_mean']
+                self.g_norm.std = checkpoint['g_std']
+                self.o_norm.std = checkpoint['o_std']
+
+        if self.params.cuda and torch.cuda.is_available():
+            device = torch.device("cuda")
+        else:
+            device = torch.device("cpu")
+        self.actor.to(device)
+  
+        
+
+    def _preproc_inputs(self, o, g):
+        obs_norm = self.o_norm.normalize(o)
+        g_norm = self.g_norm.normalize(g)
+
+        inputs = np.concatenate([obs_norm, g_norm])
+
+        inputs = torch.tensor(inputs, dtype=torch.float32).unsqueeze(0)
+        if self.params.cuda:
+            inputs = inputs.cuda()
+        return inputs
+
+    def test(self):
+
+        # test start
+        total_success_rate = []
+        cumulate_test_reward = []
+
+        for t in range(self.params.test_episodes):
+            rospy.logwarn("Test ep {}".format(t))
+            per_success_rate = []
+            observation = self.env.reset()
+            obs = observation["observation"]
+            g = observation["desired_goal"]
+            cumulate_episode_reward = 0
+            done = False
+            ep = 0
+            while not (done or (ep == self.params.max_ep_step)):
+                with torch.no_grad():
+                    input_tensor = self._preproc_inputs(obs, g)
+                    self.actor.eval()
+                    pi = self.actor(input_tensor)
+                    # convert the actions
+                    actions = pi.detach().cpu().numpy().squeeze()
+
+                observation_new, reward, done, info = self.env.step(actions)
+
+                obs = observation_new["observation"]
+                g = observation_new["desired_goal"]
+                cumulate_episode_reward += reward
+                ep += 1
+                per_success_rate.append(info["is_success"])
+                total = sum(per_success_rate)   #0 or 1
+            total_success_rate.append(total)  # store result of episode
+            cumulate_test_reward.append(cumulate_episode_reward / ep)
+                #need some meansurements for calculating more efficiently 
+
+        cumulate_reward_avg = np.mean(np.array(cumulate_test_reward))
+        total_success_rate = np.array(total_success_rate)
+        local_success_rate = np.mean(total_success_rate)
+
+        print("Distance(mm) mean: {0} ".format(cumulate_reward_avg * 1000))
+        print("Success rate avg {0}".format(local_success_rate))
+
+        
