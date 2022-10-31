@@ -482,11 +482,13 @@ class DDPG_HER_N:
                         mb_g.append(ep_g)
                         mb_actions.append(ep_actions)
                         mb_r.append(ep_r)
-                    """mb_obs = np.array(mb_obs, dtype=object)
+                    """
+                    mb_obs = np.array(mb_obs, dtype=object)
                     mb_ag = np.array(mb_ag, dtype=object)
                     mb_g = np.array(mb_g, dtype=object)
                     mb_actions = np.array(mb_actions, dtype=object)
-                    mb_r = np.array(mb_r, dtype=object)"""
+                    mb_r = np.array(mb_r, dtype=object)
+                    """
                     # store the episode in buffer
                     self.buffer.store_episode([mb_obs, mb_ag, mb_g, mb_actions])
                     # update normalizer because we have new data (new episode)

@@ -157,52 +157,6 @@ class Socket_comm():
                 break
 
 
-    def P_checker(cem):
-        Rc_ext = np.array([[-0.0001, 1.0000, 0.0075], [1.0000, 0.0002, -0.0078], [-0.0078, 0.0075, -0.9999]])
-        Tc_ext = np.array([[-84.6682], [-56.1898], [257.6207]])
-        Z = Tc_ext[2][0]
-        K = np.array([[667.2960, 0, 324.0589], [0, 666.4399, 240.9338], [0, 0, 1]])
-        mp = np.array([[cem[0]], [cem[1]], [1]])
-        T_P_Check = np.linalg.pinv(Rc_ext).dot(np.linalg.pinv(K).dot(Z).dot(mp) - Tc_ext)
-        T_P_Check = np.vstack((T_P_Check, 1))
-        return T_P_Check
-
-    def Checker_robot():
-        P1 = np.array([[513.089, -194.321, 194]])  # P1 origin
-        P1 = P1.T
-        P2 = np.array([[392.944, -194.269,  194]])  # P2 x_direction
-        P2 = P2.T
-        P3 = np.array([[514.774, -373.187, 194]])  # P3 y_direction
-        P3 = P3.T
-        # distance |P2 - P1| & |P3 - P1|
-        D21 = abs(pow(P2[0][0] - P1[0][0], 2))
-        D21 = D21 + abs(pow(P2[1][0] - P1[1][0], 2))
-        D21 = D21 + abs(pow(P2[2][0] - P1[2][0], 2))
-        D21 = np.sqrt(D21)
-        D31 = abs(pow(P3[0][0] - P1[0][0], 2))
-        D31 = D31 + abs(pow(P3[1][0] - P1[1][0], 2))
-        D31 = D31 + abs(pow(P3[2][0] - P1[2][0], 2))
-        D31 = np.sqrt(D31)
-        # print('Distance = ',D31) # test distance
-        a = (P2[0][0] - P1[0][0]) / D21
-        b = (P2[1][0] - P1[1][0]) / D21
-        c = (P2[2][0] - P1[2][0]) / D21
-        X = np.array([[a], [b], [c]])
-
-        a = (P3[0][0] - P1[0][0]) / D31
-        b = (P3[1][0] - P1[1][0]) / D31
-        c = (P3[2][0] - P1[2][0]) / D31
-        Y = np.array([[a], [b], [c]])
-
-        a = X[1, 0] * Y[2, 0] - X[2, 0] * Y[1, 0]
-        b = -X[0, 0] * Y[2, 0] + X[2, 0] * Y[0, 0]
-        c = X[0, 0] * Y[1, 0] - X[1, 0] * Y[0, 0]
-        Z = np.array([[a], [b], [c]])
-
-        T_Checker_robot = np.hstack((X, Y, Z, P1))
-        return T_Checker_robot
-
-
     def moveposition(self):
         print("move to home position")
         self.move_robot(home_pos, self.MACHINE_ABS_LINEAR)
