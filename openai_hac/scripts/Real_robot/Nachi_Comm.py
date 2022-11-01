@@ -35,7 +35,7 @@ class Socket_comm():
         # define a TCP/IP socket
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_address = (('192.168.1.1', self.PORT_NUM))        # Controller IP address
-
+        self.home_position = [0, 0, 0, 0, -90, 0]
     def socket_initalize(self):
         # server_address = (('localhost', PORT_NUM))
         print('Connecting to {} port {}'.format(*self.server_address))
@@ -55,6 +55,7 @@ class Socket_comm():
         data = self.sock.recv(1024)      #buffer size
         data = data.decode("utf-8")
         data = data.split(",")
+        '''
         print("-----------------------")
         print("Current Tool Position")
         print("-----------------------")
@@ -65,7 +66,8 @@ class Socket_comm():
         print('Roll :  ', data[3])
         print('Pitch:  ', data[4])
         print('Yaw  :  ', data[5])
-
+        '''
+        return data
     def joint_coordinate(self):
         M = "J"
         M = bytes(M, 'utf-8')
@@ -74,6 +76,9 @@ class Socket_comm():
         data = self.sock.recv(1024)
         data = data.decode("utf-8")
         data = data.split(",")
+        return data
+        
+        '''
         print("-----------------------")
         print("Current Joint Position")
         print("-----------------------")
@@ -83,7 +88,7 @@ class Socket_comm():
         print('Joint 3 :  ', data[2])
         print('Joint 4 :  ', data[3])
         print('Joint 5 :  ', data[4])
-        print('Joint 6 :  ', data[5])
+        print('Joint 6 :  ', data[5])'''
 
     def move_robot(self, move_coord, move_mode):        # Move I-K (3 mode)
 
@@ -157,15 +162,14 @@ class Socket_comm():
                 break
 
 
-    def moveposition(self):
-        print("move to home position")
-        self.move_robot(home_pos, self.MACHINE_ABS_LINEAR)
+    def moveposition(self, position, mode):
+        if mode == "machine_abs_linear":
+            self.move_robot(position, self.MACHINE_ABS_LINEAR)
+        elif mode == "machine_abs_joint":
+            self.move_robot(position, self.MACHINE_ABS_JOINT)
+    
+    def move_home(self):
+        self.move_robot(self.home_position, self.MACHINE_ABS_JOINT)
 
-home_pos = [0, 0, 0, 0, -90, 0]
-Robot = Socket_comm()
-Robot.socket_initalize()
-Robot.joint_coordinate()
-Robot.tool_coordinate()
-Robot.moveposition()
 
 

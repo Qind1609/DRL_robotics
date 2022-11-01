@@ -14,7 +14,7 @@ import time
 from openai_ros.task_envs.nachi import nachi_random_world
 from openai_ros.robot_envs import nachi_env
 from openai_ros import robot_gazebo_env
-#from Real_robot.Nachi_Comm import Socket_comm
+from Real_robot.Nachi_Comm import Socket_comm
 
 class Hyper_Params:
     def __init__(self):
@@ -104,11 +104,11 @@ class Hyper_Params:
         self.position_z_min = 0.15
 
 class Real_Move():
-    def __init__(self, params, env, env_params) -> None:
+    def __init__(self, params, env, env_params, robot) -> None:
         self.env = env
         self.env_params = env_params
         self.params = params
-
+        self.robot = robot
         # load actor model
         self.actor = Actor(self.env_params)
         
@@ -170,9 +170,12 @@ class Real_Move():
 
                 # set action in virtual env
                 observation_new, _, Done, _ = self.env.step(actions)
-
+                current_pose = self.robot.tool_coordinate()
+                action = list(np.array(current_pose[:3]) + np.array(actions[:3]))
+                actions = np.concatenate([action, current_pose[3:]]).tolist()
+                print(actions)
                 # set action for real-robot here
-
+                self.robot.moveposition(actions, 'machine_abs_linear')
                 # get new observation
                 o = observation_new["observation"]
                 step += 1
@@ -222,7 +225,8 @@ if __name__ == "__main__":
         torch.cuda.manual_seed(params.seed + MPI.COMM_WORLD.Get_rank())
     
     # connect to real robot TODO:
-
+    Robot = Socket_comm()
+    Robot.socket_initalize()
 
     #Initialize robot
     # reset and get observation (vir robot)
@@ -230,8 +234,10 @@ if __name__ == "__main__":
 
     goal = obs["desired_goal"]
     # move home real robot TODO:
+    Robot.move_home()
 
-    
+    print("Home Position Joint {0}".format(Robot.joint_coordinate)+"/n"+"Position Tool {0}".format(Robot.tool_coordinate()))
+
     print("initial random goal is: {0}".format(goal))
     env_params = {
         "obs_dim": obs["observation"].shape[0],
@@ -241,7 +247,7 @@ if __name__ == "__main__":
         "max_timesteps": env._max_episode_steps,  # max_step for each ep
     }
 
-    ddpg_agent = Real_Move(params, env, env_params)
+    ddpg_agent = Real_Move(params, env, env_params, Robot)
     
     print(">>>>>>>>>>>>>>>>>>> Input your goal: ..... <<<<<<<<<<<<<")
     while 1:
