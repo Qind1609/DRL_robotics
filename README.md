@@ -17,4 +17,9 @@ I changed the HER buffer in TianhongDai/OpenAI work from a static to dynamics si
 - Gym 0.21.0
 - MoveIt 1
 
+# Demo video:
+- https://www.youtube.com/watch?v=6-gCsZbldZk
+- https://www.youtube.com/watch?v=z-ClO1CUYug
+
 # Instruction:
+- Will be added later
