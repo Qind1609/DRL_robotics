@@ -1,0 +1,199 @@
+' TCP/IP_Socket(Server)
+
+'----------------------------------------------------------
+' Setup
+'----------------------------------------------------------
+DIM Port 			AS INTEGER
+DIM SendDataLen 		AS INTEGER
+DIM SendIODataLen 		AS INTEGER
+DIM ReceiveDataLen 		AS INTEGER
+DIM ReceiveBufferLen 	AS INTEGER
+Port  			= 48952				
+SendDataLen  		= 12				
+SendIODataLen  		= 3		
+ReceiveDataLen  		= 8				
+ReceiveBufferLen 		= ReceiveDataLen * 6	+3
+'----------------------------------------------------------
+' Initialize
+'----------------------------------------------------------
+V10! = 0			'Current X
+V11! = 0			'Current Y
+V12! = 0			'Current Z
+V13! = 0			'Current Roll
+V14! = 0			'Current Pitch
+V15! = 0			'Current Yaw
+V10$ = ""			'Send X
+V11$ = ""			'Send Y
+V12$ = ""			'Send Z
+V13$ = ""			'Send Roll
+V14$ = ""			'Send Pitch
+V15$ = ""			'Send Yaw
+V16$ = ""			'Send IO
+V1$  = ""			'Receive X/		J1
+V2$  = ""			'Receive Y/	J2
+V3$  = ""			'Receive Z/		J3
+V4$  = ""			'Receive Roll/	J4
+V5$  = ""			'Receive Pitch/	J5
+V6$  = ""			'Receive Yaw/	J6
+V7$  = ""			'Additional String
+V18$ = "FIN"
+V20$ = "REA"
+V21$ = "CONTINOUS_MOVE"
+V1!  = 0			'Receive X
+V2!  = 0			'Receive Y
+V3!  = 0			'Receive Z
+V4!  = 0			'Receive Roll
+V5!  = 0			'Receive Pitch
+V6!  = 0			'Receive Yaw
+V7! = 0
+R1 = (0,0,0,0,0,0)		'Shift Register
+'----------------------------------------------------------
+SOCKCREATE 1,0
+IF E1%<0 THEN *ERROR
+'----------------------------------------------------------
+SOCKBIND 1,Port
+IF E1%<0 THEN *ERROR
+'----------------------------------------------------------
+SOCKWAIT 1,2,0
+IF E1%<0 THEN *ERROR
+'----------------------------------------------------------
+*WAIT
+SOCKRECV 2,5,1,0,V110%
+GETSTR 5, V8$, 0, 1
+
+IF V8$ = "A"
+V8$ = "B"
+SOCKSENDSTR 2,V20$,LEN(V20$),0,V105%,0
+GOTO *RECEIVE
+
+ELSEIF V8$ = "P" 	
+V8$ = "B"
+GOTO  *SENDPOSITION
+
+ELSEIF V8$ = "J" 	
+V8$ = "B"
+GOTO  *SENDJOINT
+
+ELSEIF V8$ = "C" 	
+V8$ = "B"
+GOTO  *CLOSE
+
+ENDIF
+GOTO *WAIT
+'----------------------------------------------------------
+*RECEIVE
+SOCKRECV 2,1,ReceiveBufferLen,0,V110%
+IF E1%<0 THEN *ERROR
+
+GETSTR 1, V1$, ReceiveDataLen * 0, ReceiveDataLen
+GETSTR 1, V2$, ReceiveDataLen * 1, ReceiveDataLen
+GETSTR 1, V3$, ReceiveDataLen * 2, ReceiveDataLen
+GETSTR 1, V4$, ReceiveDataLen * 3, ReceiveDataLen
+GETSTR 1, V5$, ReceiveDataLen * 4, ReceiveDataLen
+GETSTR 1, V6$, ReceiveDataLen * 5, ReceiveDataLen
+GETSTR 1, V7$, ReceiveDataLen * 6, 3
+
+'----------------------------------------------------------
+V10! = SYSTEM!(810)		'X
+V11! = SYSTEM!(811)		'Y
+V12! = SYSTEM!(812)		'Z
+V13! = SYSTEM!(813)		'Roll
+V14! = SYSTEM!(814)		'Pitch
+V15! = SYSTEM!(815)		'Yaw
+V1! = VAL(V1$)
+V2! = VAL(V2$)
+V3! = VAL(V3$)
+V4! = VAL(V4$)
+V5! = VAL(V5$)
+V6! = VAL(V6$)
+R1 = (V1!,V2!,V3!,V4!,V5!,V6!)
+'----------------------------------------------------------
+'Set Register
+'----------------------------------------------------------
+V7% = VAL(V7$)
+'----------------------------------------------------------
+*DONE
+IF V8% = 1
+SOCKSENDSTR 2,V18$,LEN(V18$),0,V105%,0
+V8% = 0
+GOTO *WAIT
+ENDIF
+GOTO *DONE
+'----------------------------------------------------------
+*SENDPOSITION
+V10! = SYSTEM!(810)		'X
+V11! = SYSTEM!(811)		'Y
+V12! = SYSTEM!(812)		'Z
+V13! = SYSTEM!(813)		'Roll
+V14! = SYSTEM!(814)		'Pitch
+V15! = SYSTEM!(815)		'Yaw
+
+'---------------------------------
+V10$ =LEFT$(STR$(V10!), SendDataLen)
+V11$ =LEFT$(STR$(V11!), SendDataLen)
+V12$ =LEFT$(STR$(V12!), SendDataLen)
+V13$ =LEFT$(STR$(V13!), SendDataLen)
+V14$ =LEFT$(STR$(V14!), SendDataLen)
+V15$ =LEFT$(STR$(V15!), SendDataLen)
+
+V16$ =STR$(O[1])
+V16$ =V16$ + STR$(O[2])
+V16$ =V16$ + STR$(O[3])
+V16$ =LEFT$(V16$, SendIODataLen)
+
+V17$ =V10$+","+V11$+","+V12$+","+V13$+","+V14$+","+V15$+","+V16$+","
+SOCKSENDSTR 2,V17$,LEN(V17$),0,V105%,0
+IF E1%<0 THEN *ERROR
+GOTO *WAIT
+
+'----------------------------------------------------------
+*SENDJOINT
+V10! = SYSTEM!(100)		'J1
+V11! = SYSTEM!(101)		'J2
+V12! = SYSTEM!(102)		'J3
+V13! = SYSTEM!(103)		'J4
+V14! = SYSTEM!(104)		'J5
+V15! = SYSTEM!(105)		'J6
+
+V10! = RADDEG(V10!)
+V11! = RADDEG(V11!)
+V12! = RADDEG(V12!)
+V13! = RADDEG(V13!)
+V14! = RADDEG(V14!)
+V15! = RADDEG(V15!)
+
+'---------------------------------
+V10$ =LEFT$(STR$(V10!), SendDataLen)
+V11$ =LEFT$(STR$(V11!), SendDataLen)
+V12$ =LEFT$(STR$(V12!), SendDataLen)
+V13$ =LEFT$(STR$(V13!), SendDataLen)
+V14$ =LEFT$(STR$(V14!), SendDataLen)
+V15$ =LEFT$(STR$(V15!), SendDataLen)
+
+V16$ =STR$(O[1])
+V16$ =V16$ + STR$(O[2])
+V16$ =V16$ + STR$(O[3])
+V16$ =LEFT$(V16$, SendIODataLen)
+
+V17$ =V10$+","+V11$+","+V12$+","+V13$+","+V14$+","+V15$+","+V16$+","
+SOCKSENDSTR 2,V17$,LEN(V17$),0,V105%,0
+IF E1%<0 THEN *ERROR
+GOTO *WAIT
+
+'----------------------------------------------------------
+*CLOSE
+'----------------------------------------------------------
+SOCKCLOSE 1
+SOCKCLOSE 2
+EXIT
+
+*ERROR
+WINDOW 0,0,200,100
+PRINT #0,STR$(E1%)
+PRINT #0,STR$(E2%)
+SOCKCLOSE 1
+SOCKCLOSE 2
+PAUSE 3000
+EXIT
+
+

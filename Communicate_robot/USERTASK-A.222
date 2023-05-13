@@ -1,0 +1,88 @@
+' TCP/IP_Socket(Client)
+DIM Port AS INTEGER
+DIM IpAdd AS INTEGER
+DIM SendDataLen AS INTEGER
+DIM SendIODataLen AS INTEGER
+DIM ReceiveDataLen AS INTEGER
+DIM ReceiveBufferLen AS INTEGER
+Port = 48952 'Port#
+IpAdd = 10 'Server IP address
+SendDataLen = 12 'Send Data Len
+ReceiveDataLen = 8 'Receive Data Len
+ReceiveBufferLen = ReceiveDataLen * 7+1 'Receive Buffer Len
+V10! = 0 'Current X
+V11! = 0 'Current Y
+V12! = 0 'Current Z
+V13! = 0 'Current Roll
+V14! = 0 'Current Pitch
+V15! = 0 'Current Yaw
+V10$ = "" 'Send X
+V11$ = "" 'Send Y
+V12$ = "" 'Send Z
+V13$ = "" 'Send Roll
+V14$ = "" 'Send Pitch
+V15$ = "" 'Send Yaw
+V18$ = "OK"+"," 'Send Flag
+V1$ = "" 'Receive X
+V2$ = "" 'Receive Y
+V3$ = "" 'Receive Z
+V4$ = "" 'Receive Roll
+V5$ = "" 'Receive Pitch
+V6$ = "" 'Receive Yaw
+V7$ = "" 'Receive Mode
+V100% = 0 'Flow Control
+SOCKCREATE 2,0
+IF E1%<0 THEN *ERROR
+SOCKCONNECT 2,IpAdd,Port,1
+IF E1%<0 THEN *ERROR
+V10! = SYSTEM!(810) 'X
+V11! = SYSTEM!(811) 'Y
+V12! = SYSTEM!(812) 'Z
+V13! = SYSTEM!(813) 'Roll
+V14! = SYSTEM!(814) 'Pitch
+V15! = SYSTEM!(815) 'Yaw
+V10$ =LEFT$(STR$(V10!), SendDataLen)
+V11$ =LEFT$(STR$(V11!), SendDataLen)
+V12$ =LEFT$(STR$(V12!), SendDataLen)
+V13$ =LEFT$(STR$(V13!), SendDataLen)
+V14$ =LEFT$(STR$(V14!), SendDataLen)
+V15$ =LEFT$(STR$(V15!), SendDataLen)
+V17$ =V10$+","+V11$+","+V12$+","+V13$+","+V14$+","+V15$+","
+SOCKSENDSTR 2,V17$,LEN(V17$),0,V105%,0
+IF E1%<0 THEN *ERROR
+*PLAYBACK
+WHILE V100% <> 0
+ENDW
+SOCKSENDSTR 2,V18$,LEN(V18$),0,V105%,0
+IF E1%<0 THEN *ERROR
+SOCKRECV 2,1,ReceiveBufferLen,0,V110%
+IF E1%<0 THEN *ERROR
+GETSTR 1, V1$, ReceiveDataLen * 0, ReceiveDataLen
+GETSTR 1, V2$, ReceiveDataLen * 1, ReceiveDataLen
+GETSTR 1, V3$, ReceiveDataLen * 2, ReceiveDataLen
+GETSTR 1, V4$, ReceiveDataLen * 3, ReceiveDataLen
+GETSTR 1, V5$, ReceiveDataLen * 4, ReceiveDataLen
+GETSTR 1, V6$, ReceiveDataLen * 5, ReceiveDataLen
+GETSTR 1, V7$, ReceiveDataLen * 6, ReceiveDataLen
+V1! = VAL(V1$)
+V2! = VAL(V2$)
+V3! = VAL(V3$)
+V4! = VAL(V4$)
+V5! = VAL(V5$)
+V6! = VAL(V6$)
+V7% = VAL(V7$)
+V100%=1
+GOTO*PLAYBACK
+SOCKCLOSE 2
+EXIT
+*ERROR
+WINDOW 0,0,200,100
+PRINT #0,STR$(E1%)
+PRINT #0,STR$(E2%)
+SOCKCLOSE 2
+PAUSE 3000
+EXIT
+
+
+
+

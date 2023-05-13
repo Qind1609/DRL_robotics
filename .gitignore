@@ -1,0 +1,7 @@
+*.pyc
+.~*
+.vscode
+openai_hac/log/
+openai_hac/.vscode
+openai_ros/open_ros/.vscode
+openai_ros/openai_ros/doc/.idea/

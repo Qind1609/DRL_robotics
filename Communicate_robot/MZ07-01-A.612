@@ -1,0 +1,47 @@
+'PICK AND PLACE
+'AUTHORS: VAN LAM
+USE 900
+V1! = SYSTEM!(810)			'X
+V2! = SYSTEM!(811)			'Y
+V3! = SYSTEM!(812)			'Z
+V4! = SYSTEM!(813)			'ROLL
+V5! = SYSTEM!(814)			'PITCH
+V6! = SYSTEM!(815)			'YAW
+V100% = 0					'FLAG
+FORKMCR 222,12 'run usertask num 610 then jump to line 10
+WHILE V100% <> 1
+ENDW
+'---------------------------MOVE LINEAR
+IF V7% = 1
+P1 = (V1!,V2!,V3!,V4!,V5!,V6!)
+MOVEX A=1,M1X,L,P1,S=100.0,H=1,MS
+GOTO *RESETFLAG
+ENDIF
+'---------------------------OPEN COMPRESSED AIR 9 CLOSE COMPRESSED AIR 10
+IF V7% = 9
+P1 = (V1!,V2!,V3!,V4!,V5!,V6!)
+MOVEX A=1,M1X,L,P1,S=400.0,H=1,MS
+SETM O9, 0
+SETM O10, 0
+SETM O9, 1
+GOTO *RESETFLAG
+ENDIF
+'---------------------------OPEN COMPRESSED AIR 10 CLOSE COMPRESSED AIR 9
+IF V7% = 10
+P1 = (V1!,V2!,V3!,V4!,V5!,V6!)
+MOVEX A=1,M1X,L,P1,S=400.0,H=1,MS
+SETM O9, 0
+SETM O10, 0
+SETM O10, 1
+GOTO *RESETFLAG
+ENDIF
+
+
+'--------------------
+GOTO 10
+'--------------------
+*RESETFLAG
+V7% = 0
+V100% = 0
+GOTO 10
+END
